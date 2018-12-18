@@ -1,0 +1,84 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Dec 16 13:42:51 2018
+
+@author: cemal
+"""
+#kütüphaneleri yükleme
+import pandas as pd
+import numpy as np
+
+veriler=pd.read_csv('odev_tenis.csv ' )
+print(veriler)
+nemsıcak=veriler.iloc[ : , 1:3]
+print(nemsıcak)
+
+#sunny,overcas,,rainy katagorik verilerin numeric verilere dönüşümü
+from sklearn.preprocessing import LabelEncoder 
+lab=LabelEncoder()
+htahmin=veriler.iloc[:,0:1].values
+print(htahmin)
+htahmin[:,0]=lab.fit_transform(htahmin[:,0])
+print(htahmin)
+#verileri one hot encoding kullanarak 0 ve 1 lere dönüştürme
+from sklearn.preprocessing import OneHotEncoder
+on=OneHotEncoder()
+htahmin=on.fit_transform(htahmin).toarray()
+print(htahmin)
+
+
+#windy katagorik verilerin numeric verilere dönüşümü
+from sklearn.preprocessing import LabelEncoder 
+lab1=LabelEncoder()
+ruzgar=veriler.iloc[:,3:4 ].values
+print(ruzgar)
+ruzgar[:,0]=lab1.fit_transform(ruzgar[:,0])
+print(ruzgar)
+from sklearn.preprocessing import OneHotEncoder
+on=OneHotEncoder()
+ruzgar=on.fit_transform(ruzgar).toarray()
+print(ruzgar)
+#play katagorik verisinin numeric veriye dönüşümü
+from sklearn.preprocessing import LabelEncoder 
+lab2=LabelEncoder()
+oyna=veriler.iloc[:,-1: ].values
+print(oyna)
+oyna[:,0]=lab2.fit_transform(oyna[:,0])
+print(oyna)
+from sklearn.preprocessing import OneHotEncoder
+on=OneHotEncoder()
+oyna=on.fit_transform(oyna).toarray()
+print(oyna)
+
+# Dataframelere dönüşüm
+son=pd.DataFrame(data=htahmin, index=range(14) , columns=['sunny' ,'overcast' , 'rainy'])
+print(son)
+son2=pd.DataFrame(data=ruzgar[:,-1], index=range(14) , columns=['w'])
+print(son2)
+
+son3=pd.DataFrame(data=nemsıcak, index=range(14) , columns=['temperature','humidity' ])
+print(son3)
+son2=pd.DataFrame(data=ruzgar[:,-1], index=range(14) , columns=['windy'])
+print(son2)
+son4=pd.DataFrame(data=oyna[: , -1], index=range(14) , columns=['play' ])
+print(son4)
+s5=pd.concat([son,son3,son2] , axis=1)
+print(s5)
+#verileri test ve train olarak bölme
+
+from sklearn.cross_validation import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(s5,oyna[:,:-1],test_size=0.33,random_state=0)
+#linear regression uygulama
+from sklearn.linear_model import LinearRegression
+LR=LinearRegression()
+LR.fit(x_train,y_train)
+y_pred=LR.predict(x_test)
+#backward eleminasyon yöntemiyle p valuesi en düşük değerleri görme ve verileri istatiksel olarak inceleme
+import statsmodels.formula.api as sm 
+X=np.append(arr = np.ones((14,1)).astype(int), values=s5, axis=1 )
+X_l=s5.iloc[:,[0,1,2,3,4,5]].values
+r_ols=sm.OLS(endog = son4, exog =X_l).fit()
+
+print(r_ols.summary())
+
+
